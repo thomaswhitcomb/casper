@@ -46,15 +46,21 @@
   (GET "/request" request (str "request is: " (pr-str request)))
 
   (POST "/create" {params :params,port :server-port,server :server-name} 
-    (let [ 
-       encrypted-secret (encrypt-base64 (get params :secret) "THE KEY")
-       my-uuid (uuid) 
-     ]
-      (insert-secret my-uuid encrypted-secret)
-      { :status 200
+    (if (not= nil (get params :secret))    
+      (let [ 
+         encrypted-secret (encrypt-base64 (get params :secret) "THE KEY")
+         my-uuid (uuid) 
+       ]
+        (insert-secret my-uuid encrypted-secret)
+        { :status 200
+          :header {"Content-Type" "text/plain; charset=utf-8"}
+          :body (str "http://" server ":" port "/secret/" my-uuid )
+        }
+      )  
+      { :status 500
         :header {"Content-Type" "text/plain; charset=utf-8"}
-        :body (str "http://" server ":" port "/secret/" my-uuid )
-      }
+        :body "Missing secret form field"
+      } 
     )  
   )
   (route/not-found "Page not found")

@@ -17,7 +17,8 @@
   (Base64/encodeBase64String b))
 
 (defn debase64 [s]
-  (Base64/decodeBase64 (bytes_ s)))
+  ;(Base64/decodeBase64 (bytes_ s)))
+  (Base64/decodeBase64 s))
 
 (defn- get-raw-key [seed]
     (let [keygen (KeyGenerator/getInstance "AES")
@@ -31,21 +32,23 @@
                   cipher (Cipher/getInstance "AES")]
           (.init cipher mode key-spec)
           cipher))
-
 (defn encrypt 
-    "Symmetrically encrypts value with key, such that it can be
-       decrypted later with (decrypt). The value and key parameters are
-       expected to be a String. Returns byte[]"
+    "value should be a byte[] and returns a byte[]"
     [value key]
-    (let [b (utf8-bytes value)
-                  cipher (get-cipher Cipher/ENCRYPT_MODE key)]
-          (base64 (.doFinal cipher b))))
+    (let [ cipher (get-cipher Cipher/ENCRYPT_MODE key)]
+          (.doFinal cipher value)))
+
+(defn encrypt-base64 
+    [value key]
+    (base64 (encrypt (utf8-bytes value) key)))
 
 (defn decrypt 
-    "Decrypts a value which has been encrypted via a call to
-       (encrypt) using key. The value parameter is expected to be a 
-       byte[] and the key parameter is expected to be a String. 
-       Returns byte[]"
+    "value should be a byte[] and returns a byte[]"
     [value key]
     (let [cipher (get-cipher Cipher/DECRYPT_MODE key)]
-          (String. (.doFinal cipher (debase64 value)))))
+          (.doFinal cipher value)))
+
+(defn decrypt-base64
+    [value key]
+    "value should be a byte[]"
+    (String. (decrypt (debase64 value) key)))

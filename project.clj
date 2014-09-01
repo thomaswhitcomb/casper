@@ -9,6 +9,8 @@
                  [ring/ring-core "1.3.0"] 
                  [ring/ring-jetty-adapter "1.3.0"]
                  [compojure "1.1.6"]
+                 [org.clojure/java.jdbc "0.3.5"]
+                 [org.xerial/sqlite-jdbc "3.7.2"]
                  ]
   :main ^:skip-aot casper.core
   :plugins [[lein-ring "0.8.11"]]

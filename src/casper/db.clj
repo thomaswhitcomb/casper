@@ -3,20 +3,19 @@
   (:gen-class)
 )
 
-;(def database 
-;  {:classname   "org.sqlite.JDBC"
-;   :subprotocol "sqlite"
-;   ;:subname     "db/database.db"
-;   :subname     "jdbc:sqlite::memory:"
-;  }
-;)
 (def database 
-  {:classname   "org.h2.Driver"
-   :subprotocol "h2"
-   ;:subname     "db/database.db"
-   :subname     "jdbc:h2:mem:test"
+  {:classname   "org.sqlite.JDBC"
+   :subprotocol "sqlite"
+   :subname     "database.db"
   }
 )
+;(def database 
+;  {:classname   "org.h2.Driver"
+;   :subprotocol "h2"
+;   ;:subname     "db/database.db"
+;   :subname     "jdbc:h2:mem:test"
+;  }
+;)
 (def testdata 
   {
    :key "aa-bb-cc-dd"

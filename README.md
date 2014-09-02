@@ -17,6 +17,8 @@ Used to create your secrets from a script.  Use the *secret* form variable to tr
 
 `curl -v --data-urlencode "secret=your personal secret"`"
 
+Your unique URL returned from the `curl` call.
+
 Thanks
 ======
 Thanks to Tommy Bishop for the great idea.

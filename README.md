@@ -29,7 +29,7 @@ Developers
 ==========
 1. Get leiningen (the awesome clojure project automation tool), 
 2. Clone the repository
-3. lein run
+3. lein run "a port number"
 
 Thanks
 ======

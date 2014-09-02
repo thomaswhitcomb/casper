@@ -6,7 +6,8 @@
 (def database 
   {:classname   "org.sqlite.JDBC"
    :subprotocol "sqlite"
-   :subname     "db/database.db"
+   ;:subname     "db/database.db"
+   :subname     ":memory"
   }
 )
 (def testdata 

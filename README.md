@@ -2,6 +2,8 @@ Casper
 ======
 Casper is a Clojure web application that provides a friendly, easy way to create one-time secrets.  Create a secret, get a unique URL that returns your secret once.  The next time the URL is queried (GET), the secret is gone.
 
+Your secret can be anything you want.  Plain text, JSON, a private key or a public key.  Anything you can put into a POST.
+
 Your secret is safe with us until it is viewed with the one-time URL.  We encrypt it and save it until you retreive it.  Once you retrieve it, we delete it.
 
 API
@@ -18,6 +20,12 @@ Used to create your secrets from a script.  Use the *secret* form variable to tr
 `curl -v --data-urlencode "secret=your personal secret"`"
 
 Your unique URL returned from the `curl` call.
+
+Developers
+==========
+1 Get leiningen (the awesome clojure project automation tool), 
+2 Clone the repository
+3 lein run
 
 Thanks
 ======

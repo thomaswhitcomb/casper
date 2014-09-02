@@ -82,9 +82,8 @@
 
 (def app (handler/site casper-routes))
 
-(defn -main [& m]
-  ;(run-jetty app {:port 8080 })
-  (run-jetty app )
+(defn -main [& port]
+  (run-jetty app {:port (Integer/parseInt (first port)) })
 )
 
 ;(run-jetty app {:port 8080})

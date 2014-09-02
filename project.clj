@@ -11,6 +11,7 @@
                  [compojure "1.1.6"]
                  [org.clojure/java.jdbc "0.3.5"]
                  [org.xerial/sqlite-jdbc "3.7.2"]
+                 [digest "1.4.4"]
                  ]
   :main ^:skip-aot casper.core
   :plugins [[lein-ring "0.8.11"]]

@@ -22,31 +22,38 @@
 
 (defn- get-raw-key [seed]
     (let [keygen (KeyGenerator/getInstance "AES")
-                  sr (SecureRandom/getInstance "SHA1PRNG")]
+          sr (SecureRandom/getInstance "SHA1PRNG")]
           (.setSeed sr (utf8-bytes seed))
           (.init keygen 128 sr)
-          (.. keygen generateKey getEncoded)))
+          (.. keygen generateKey getEncoded)
+    )
+)
 
 (defn- get-cipher [mode seed]
-    (let [key-spec (SecretKeySpec. (get-raw-key seed) "AES")
-                  cipher (Cipher/getInstance "AES")]
-          (.init cipher mode key-spec)
-          cipher))
+  (let [key-spec (SecretKeySpec. (get-raw-key seed) "AES")
+        cipher (Cipher/getInstance "AES")
+       ]
+       (.init cipher mode key-spec)
+       cipher
+  )
+)
 (defn encrypt 
-    "value should be a byte[] and returns a byte[]"
-    [value key]
-    (let [ cipher (get-cipher Cipher/ENCRYPT_MODE key)]
-          (.doFinal cipher value)))
+  "value should be a byte[] and returns a byte[]"
+  [value key]
+  (let [ cipher (get-cipher Cipher/ENCRYPT_MODE key)]
+        (.doFinal cipher value)
+  )
+)
 
 (defn encrypt-base64 
-    [value key]
-    (base64 (encrypt (utf8-bytes value) key)))
+  [value key]
+  (base64 (encrypt (utf8-bytes value) key)))
 
 (defn decrypt 
-    "value should be a byte[] and returns a byte[]"
-    [value key]
-    (let [cipher (get-cipher Cipher/DECRYPT_MODE key)]
-          (.doFinal cipher value)))
+  "value should be a byte[] and returns a byte[]"
+  [value key]
+  (let [cipher (get-cipher Cipher/DECRYPT_MODE key)]
+    (.doFinal cipher value)))
 
 (defn decrypt-base64
     [value key]

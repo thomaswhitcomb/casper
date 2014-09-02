@@ -8,10 +8,11 @@
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
     [compojure.route :as route]
+    [digest :as digest]
   )
 )
 
-(defn uuid [] (str (java.util.UUID/randomUUID)))
+(defn unique-key [] (digest/md5 (str (java.util.UUID/randomUUID))))
 
 (defroutes casper-routes           
   (GET "/" [] "<h1>Create a Secret</h1><a href='./create'>Here</a>")
@@ -20,9 +21,9 @@
 
   (GET "/secret/:secret" [secret] 
     (let [ record  (first (select-secret secret)) ]
-      (delete-secret (get record :uuid)) 
+      (delete-secret (get record :key)) 
       (if (= 0 (count record))
-        { :status 400
+        { :status 404
           :headers {"Content-Type" "text/plain; charset=utf-8"}
           :body "Secret already viewed"
         } 
@@ -48,16 +49,16 @@
   (POST "/create" {params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))    
       (let [ 
-         encrypted-secret (encrypt-base64 (get params :secret) "THE KEY")
-         my-uuid (uuid) 
-       ]
-        (insert-secret my-uuid encrypted-secret)
-        { :status 200
-          :header {"Content-Type" "text/plain; charset=utf-8"}
-          :body (str "http://" server ":" port "/secret/" my-uuid )
-        }
+          encrypted-secret (encrypt-base64 (get params :secret) "THE KEY")
+          my-key (unique-key) 
+         ]
+         (insert-secret my-key encrypted-secret)
+         { :status 201
+           :header {"Content-Type" "text/plain; charset=utf-8"}
+           :body (str "http://" server ":" port "/secret/" my-key )
+         }
       )  
-      { :status 500
+      { :status 400
         :header {"Content-Type" "text/plain; charset=utf-8"}
         :body "Missing secret form field"
       } 

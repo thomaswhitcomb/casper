@@ -11,7 +11,7 @@
 )
 (def testdata 
   {
-   :uuid "aa-bb-cc-dd"
+   :key "aa-bb-cc-dd"
    :secret "===adsf=sdf==sd=f=sd=f===sd=sdf23rwebdfg"
   }
 ) 
@@ -31,7 +31,7 @@
     (sql/create-table-ddl :secrets
        [:id :serial "PRIMARY KEY"]
        [:created_at :timestamp "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
-       [:uuid :varchar]
+       [:key :varchar]
        [:secret :varchar]
     )
   )
@@ -39,17 +39,15 @@
   )
 )
 
-(defn insert-secret [uuid secret] 
-  (sql/insert! database :secrets { :uuid uuid :secret secret })
+(defn insert-secret [key secret] 
+  (sql/insert! database :secrets { :key key :secret secret })
 ) 
-(defn select-secret [uuid ] 
-  (sql/query database [(str "SELECT id,uuid,secret,created_at FROM secrets WHERE uuid = '" uuid "';")])
+(defn select-secret [key ] 
+  (sql/query database [(str "SELECT id,key,secret,created_at FROM secrets WHERE key = '" key "';")])
 ) 
-(defn delete-secret [uuid ] 
-  (sql/delete! database  :secrets [(str "uuid = '" uuid "'" )])
+(defn delete-secret [key ] 
+  (sql/delete! database  :secrets [(str "key = '" key "'" )])
 ) 
 (drop-db)
 (create-db)
 (sql/insert! database :secrets testdata)
-
-

@@ -1,1 +1,1 @@
-web: lein run $PORT
+web: lein ring server $PORT

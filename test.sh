@@ -1,9 +1,7 @@
 #!/bin/sh
 
-URL=`curl --silent --data-urlencode "secret=$1" http://localhost:8080/create`
-SECRET=`curl $URL`
-
-
+URL=`curl --silent --data-urlencode "secret=$1" http://vast-bayou-9238.herokuapp.com/create`
+SECRET=`curl --silent $URL`
 if [ "$SECRET" == "$1" ];then
 	echo "Test 1 - OK"
 else

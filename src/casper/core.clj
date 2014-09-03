@@ -5,7 +5,7 @@
   (:require
     [ casper.crypto :refer [encrypt decrypt encrypt-base64 decrypt-base64]] 
     ;[ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
-    [ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
+    [ casper.db-ram :refer [insert-secret select-secret delete-secret now-seconds]] 
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
     [compojure.route :as route]
@@ -27,6 +27,7 @@
 (def http-status-created 201)
 (def http-status-bad-request 400)
 (def http-status-not-found 404)
+(def http-status-gone 410)
 
 ; Encryption key - TBD needs improvement
 (def encryption-key "29dlsdn wp93hfsl;kns\\]opapihjfw")
@@ -47,10 +48,18 @@
           :headers plain-text
           :body "Secret already viewed"
         } 
-        { :status http-status-ok
-          :headers plain-text
-          :body (str (decrypt-base64 (get record :secret) encryption-key))
-        } 
+        (if (>= (+ (get record :ttl) (get record :created_at)) (now-seconds))
+          { 
+            :status http-status-ok
+            :headers plain-text
+            :body (str (decrypt-base64 (get record :secret) encryption-key))
+          }
+          { 
+            :status http-status-gone
+            :headers plain-text
+            :body "TTL expired"
+          }
+        )  
       )
     )
   )     
@@ -62,10 +71,11 @@
   (POST "/create" {params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))    
       (let [ 
+          ttl 15  
           encrypted-secret (encrypt-base64 (get params :secret) encryption-key)
           my-key (unique-key) 
          ]
-         (insert-secret my-key encrypted-secret)
+         (insert-secret my-key encrypted-secret ttl)
          { :status http-status-created
            :header plain-text
            :body (str "http://" server ":" port "/secret/" my-key )

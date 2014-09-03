@@ -4,6 +4,7 @@
   (:use ring.adapter.jetty)
   (:require
     [ casper.crypto :refer [encrypt decrypt encrypt-base64 decrypt-base64]] 
+    ;[ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
     [ casper.db :refer [insert-secret select-secret delete-secret]] 
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
@@ -38,9 +39,9 @@
 
   (GET "/create" [] create-html)
 
-  (GET "/secret/:secret" [secret] 
-    (let [ record  (first (select-secret secret)) ]
-      (delete-secret (get record :key)) 
+  (GET "/secret/:id" [id] 
+    (let [ record  (first (select-secret id)) ]
+      (delete-secret id) 
       (if (= 0 (count record))
         { :status http-status-not-found
           :headers plain-text

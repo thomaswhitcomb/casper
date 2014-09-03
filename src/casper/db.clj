@@ -1,5 +1,5 @@
 (ns casper.db
-  (:require [clojure.java.jdbc :as sql])
+  (:require [clojure.java.jdbc :as sql] )
   (:gen-class)
 )
 
@@ -9,13 +9,6 @@
    :subname     "database.db"
   }
 )
-;(def database 
-;  {:classname   "org.h2.Driver"
-;   :subprotocol "h2"
-;   ;:subname     "db/database.db"
-;   :subname     "jdbc:h2:mem:test"
-;  }
-;)
 (def testdata 
   {
    :key "aa-bb-cc-dd"

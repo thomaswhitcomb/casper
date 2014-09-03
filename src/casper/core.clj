@@ -71,11 +71,13 @@
   (POST "/create" {params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))    
       (let [ 
-          ttl 15  
+          ttl (Integer/parseInt(get params :ttl "15" ))  ; TTL default is 15 seconds
           encrypted-secret (encrypt-base64 (get params :secret) encryption-key)
           my-key (unique-key) 
          ]
+
          (insert-secret my-key encrypted-secret ttl)
+
          { :status http-status-created
            :header plain-text
            :body (str "http://" server ":" port "/secret/" my-key )

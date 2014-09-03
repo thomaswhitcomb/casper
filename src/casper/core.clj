@@ -5,7 +5,7 @@
   (:require
     [ casper.crypto :refer [encrypt decrypt encrypt-base64 decrypt-base64]] 
     ;[ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
-    [ casper.db :refer [insert-secret select-secret delete-secret]] 
+    [ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
     [compojure.route :as route]

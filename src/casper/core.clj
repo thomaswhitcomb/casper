@@ -84,7 +84,7 @@
 
              { :status http-status-created
                :header plain-text
-               :body (str "http://" server ":" port "/secret/" my-key )
+               :body (str (if (even? port) "http" "https") "://" server ":" port "/secret/" my-key )
              }
           )
           {:status http-status-bad-request

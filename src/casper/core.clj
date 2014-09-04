@@ -69,24 +69,34 @@
   (GET "/request" request (str "request is: " (pr-str request)))
 
   (POST "/create" {params :params,port :server-port,server :server-name} 
-    (if (not= nil (get params :secret))    
-      (let [ 
-          ttl (Integer/parseInt(get params :ttl "15" ))  ; TTL default is 15 seconds
-          encrypted-secret (encrypt-base64 (get params :secret) encryption-key)
-          my-key (unique-key) 
-         ]
+    (if (not= nil (get params :secret))
+      (let [ ttl (get params :ttl "15" )] 
 
-         (insert-secret my-key encrypted-secret ttl)
+        (if (re-find #"\d+" ttl ) 
+          (let [ 
+              ttl-int (Integer/parseInt ttl )  ; TTL default is 15 seconds
+              encrypted-secret (encrypt-base64 (get params :secret) encryption-key)
+              my-key (unique-key) 
+             ]
 
-         { :status http-status-created
+             (insert-secret my-key encrypted-secret ttl-int)
+
+             { :status http-status-created
+               :header plain-text
+               :body (str "http://" server ":" port "/secret/" my-key )
+             }
+          )
+          {:status http-status-bad-request
            :header plain-text
-           :body (str "http://" server ":" port "/secret/" my-key )
-         }
-      )  
-      { :status http-status-bad-request
-        :header plain-text
-        :body "Missing secret form field"
-      } 
+           :body "TTL must be integer"  
+          }
+        )  
+     )   
+     { :status http-status-bad-request
+       :header plain-text
+       :body "Missing secret form field"
+     }
+
     )  
   )
 

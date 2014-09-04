@@ -19,7 +19,8 @@
 
 ; HTML for the create form
 (def create-html (str "<form method='post' action='/create'>"
-                    "<textarea type='text' name='secret' rows='4' cols='50'>What's your secret</textarea >"
+                    "<textarea type='text' name='secret' rows='4' cols='50' placeholder='What is your secret'></textarea >"
+                    "<p><input type='text' name='ttl' placeholder='TTL (seconds)'/></p>"
                     "<p><input type='submit' /></p>"
                     "</form>"))
 ; HTTP response codes

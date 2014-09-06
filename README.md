@@ -13,17 +13,22 @@ API
 
 Returns HTML for a simple form for creating your secret.  Click "create" and you get a one-time URL for displaying your secret.
 
+**200** - Secret created and one-time password URL returned.
+
+* **GET /secret/{unique-secret-identifier}** 
+
+**404** - Secret not found and already viewed
+**410** - Secret TTL met/exceeded
+
+Returns the original secret as a plain text string
+
 * **POST /create**
 
-Used to create your secrets from a script.  Use the *secret* form variable to transmit your secret. Here is an example with `curl:`
-
-`curl -v --data-urlencode "secret=your personal secret"`"
+Used to create your secrets from a script.  Use the *secret* and *ttl* form variables to transmit your secret. Here is an example with `curl:` `curl -v --data-urlencode "secret=your personal secret" --data-urlencode "ttl=60"`" Your unique one-time URL returned from the `curl` call as a plain text string.
 
 **201** - Secret created and one-time password URL returned.
+**404** - Missing *secret* and *ttl* form name
 
-**404** - Missing *secret* form name
-
-Your unique one-time URL returned from the `curl` call.
 
 Developers
 ==========

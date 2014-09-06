@@ -37,6 +37,7 @@
 (defn unique-key [] (digest/md5 (str (java.util.UUID/randomUUID))))
 
 (defroutes casper-routes           
+
   (GET "/" [] (redirect "/create"))
 
   (GET "/create" [] create-html)

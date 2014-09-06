@@ -10,7 +10,6 @@
                  [ring/ring-jetty-adapter "1.3.0"]
                  [compojure "1.1.6"]
                  [org.clojure/java.jdbc "0.3.5"]
-                 ;[org.xerial/sqlite-jdbc "3.7.2"]
                  [org.xerial/sqlite-jdbc "3.7.15-M1"]
                  [digest "1.4.4"]
                  ]

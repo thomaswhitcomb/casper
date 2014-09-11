@@ -1,6 +1,6 @@
 (defproject casper "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Casper the friendly one-time password"
+  :url "https://github.com/thomaswhitcomb/casper"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
@@ -13,8 +13,9 @@
                  [org.xerial/sqlite-jdbc "3.7.15-M1"]
                  [digest "1.4.4"]
                  ]
-  :main ^:skip-aot casper.core
   :plugins [[lein-ring "0.8.11"]]
   :ring {:handler casper.core/app}
-  :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  ;:target-path "target/%s"
+  :profiles {:uberjar {:aot :all}}
+  :main casper.core
+)

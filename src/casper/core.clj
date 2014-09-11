@@ -18,7 +18,7 @@
 (def plain-text {"Content-Type" "text/plain; charset=utf-8"})
 
 ; HTML for the create form
-(def create-html (str "<form method='post' action='/create'>"
+(defn create-html [context] (str "<form method='post' action='" context "/create'>"
                     "<textarea type='text' name='secret' rows='4' cols='50' placeholder='What is your secret'></textarea >"
                     "<p><input type='text' name='ttl' placeholder='TTL (seconds)'/></p>"
                     "<p><input type='submit' /></p>"
@@ -38,9 +38,9 @@
 
 (defroutes casper-routes           
 
-  (GET "/" [] (redirect "/create"))
+  (GET "/" {context :context} (redirect (str context "/create")))
 
-  (GET "/create" [] create-html)
+  (GET "/create" {context :context}  (create-html context))
 
   (GET "/secret/:id" [id] 
     (let [ record  (first (select-secret id)) ]
@@ -70,7 +70,7 @@
 
   (GET "/request" request (str "request is: " (pr-str request)))
 
-  (POST "/create" {params :params,port :server-port,server :server-name} 
+  (POST "/create" {context :context, params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))
       (let [ ttl (get params :ttl "15" )] 
 
@@ -85,7 +85,7 @@
 
              { :status http-status-created
                :header plain-text
-               :body (str (if (even? port) "http" "https") "://" server ":" port "/secret/" my-key )
+               :body (str (if (even? port) "http" "https") "://" server ":" port context "/secret/" my-key )
              }
           )
           {:status http-status-bad-request

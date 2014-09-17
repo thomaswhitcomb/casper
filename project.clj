@@ -12,6 +12,7 @@
                  [org.clojure/java.jdbc "0.3.5"]
                  [org.xerial/sqlite-jdbc "3.7.15-M1"]
                  [digest "1.4.4"]
+                 [org.clojure/data.json "0.2.5"]
                  ]
   :plugins [[lein-ring "0.8.11"]]
   :ring {:handler casper.core/app}

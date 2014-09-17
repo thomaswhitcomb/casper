@@ -10,19 +10,18 @@
     [compojure.handler :as handler]
     [compojure.route :as route]
     [digest :as digest]
+    [clojure.data.json :as json]
     [ring.util.response :refer [redirect]]
   )
 )
 
-; Content-Type for plain text
-(def plain-text {"Content-Type" "text/plain; charset=utf-8"})
+; Content-Type 
+(def text-plain {"Content-Type" "text/plain; charset=utf-8"})
+(def text-html {"Content-Type" "text/html; charset=ISO-8859-4"})
 
-; HTML for the create form
-(defn create-html [context] (str "<form method='post' action='" context "/create'>"
-                    "<textarea type='text' name='secret' rows='4' cols='50' placeholder='What is your secret'></textarea >"
-                    "<p><input type='text' name='ttl' placeholder='TTL (seconds)'/></p>"
-                    "<p><input type='submit' /></p>"
-                    "</form>"))
+; Default TTL
+(def default-ttl "15")
+
 ; HTTP response codes
 (def http-status-ok 200)
 (def http-status-created 201)
@@ -31,10 +30,47 @@
 (def http-status-gone 410)
 
 ; Encryption key - TBD needs improvement
-(def encryption-key "29dlsdn wp93hfsl;kns\\]opapihjfw")
+;(def encryption-key (slurp "resources/encrypt-key.txt"))
+(def encryption-key "ewro[i80AE9MNGLQIW8L;ZXNG-=[kf ;lsks")
 
 ; Create a unique URL consistent id
 (defn unique-key [] (digest/md5 (str (java.util.UUID/randomUUID))))
+
+(defn get-size-ttl [j] 
+  (let [ m (json/read-str j) 
+         size (get m "size" 16)
+         ttl (get m "ttl" (Integer/parseInt default-ttl))
+       ]
+    [size ttl]
+  )
+) 
+
+; HTML for the create form
+(defn create-html [context] 
+    {
+      :status http-status-ok   
+      :body (str "<form method='post' action='" context "/create'>"
+                    "<textarea type='text' name='secret' rows='4' cols='50' placeholder='What is your secret'></textarea >"
+                    "<p><input type='text' name='ttl' placeholder='TTL (seconds)' value='" default-ttl "'/></p>"
+                    "<p><input type='submit' /></p>"
+                    "</form>")
+      :headers text-html
+    }
+)                             
+
+(defn build-response [http-status content]
+  { :status http-status :headers text-plain :body content }
+)  
+
+(defn random-char [_] (char (+ 33 (rand-int 93))))
+
+(defn create-secret [size] 
+  (apply str (map random-char (range size)))
+)
+
+(defn create-url [server context port my-key]
+   (str (if (even? port) "http" "https") "://" server ":" port context "/secret/" my-key )
+)  
 
 (defroutes casper-routes           
 
@@ -46,33 +82,37 @@
     (let [ record  (first (select-secret id)) ]
       (delete-secret id) 
       (if (= 0 (count record))
-        { :status http-status-not-found
-          :headers plain-text
-          :body "Secret already viewed"
-        } 
+        (build-response http-status-not-found, "Secret already viewed")
         (if (>= (+ (get record :ttl) (get record :created_at)) (now-seconds))
-          { 
-            :status http-status-ok
-            :headers plain-text
-            :body (str (decrypt-base64 (get record :secret) encryption-key))
-          }
-          { 
-            :status http-status-gone
-            :headers plain-text
-            :body "TTL expired"
-          }
+          (build-response http-status-ok (str (decrypt-base64 (get record :secret) encryption-key)))
+          (build-response http-status-gone "TTL expired")
         )  
       )
     )
   )     
-
   (GET "/params" {params :params} (str "query params are: " (pr-str params)))
 
   (GET "/request" request (str "request is: " (pr-str request)))
 
+  (GET "/health" [] 
+    (build-response http-status-ok "i am healthy" )
+  )     
+
+  (POST "/auto" {context :context, params :params, port :server-port,server :server-name}
+    (if (not= nil (get params :json))
+      (let [ size-ttl (get-size-ttl (get params :json)) 
+             encrypted-secret (encrypt-base64 (create-secret (size-ttl 0)) encryption-key)
+             my-key (unique-key) 
+           ] 
+           (insert-secret my-key encrypted-secret (size-ttl 1))
+           (build-response http-status-created (create-url server context port my-key))
+      )
+      (build-response http-status-bad-request "Missing json form field" )
+    )    
+  )     
   (POST "/create" {context :context, params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))
-      (let [ ttl (get params :ttl "15" )] 
+      (let [ ttl (get params :ttl default-ttl )] 
 
         (if (re-find #"\d+" ttl ) 
           (let [ 
@@ -82,22 +122,12 @@
              ]
 
              (insert-secret my-key encrypted-secret ttl-int)
-
-             { :status http-status-created
-               :header plain-text
-               :body (str (if (even? port) "http" "https") "://" server ":" port context "/secret/" my-key )
-             }
+             (build-response http-status-created (create-url server context port my-key))
           )
-          {:status http-status-bad-request
-           :header plain-text
-           :body "TTL must be integer"  
-          }
+          (build-response http-status-bad-request "TTL must be integer" )
         )  
      )   
-     { :status http-status-bad-request
-       :header plain-text
-       :body "Missing secret form field"
-     }
+     (build-response http-status-bad-request "Missing secret form field")
 
     )  
   )

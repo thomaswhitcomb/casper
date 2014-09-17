@@ -23,16 +23,21 @@ Returns the original secret as a plain text string
 
 * **410** - Secret TTL met/exceeded
 
-
-
 **POST /create**
 
 Used to create your secrets from a script.  Use the *secret* and *ttl* form variables to transmit your secret. Here is an example with `curl:` `curl -v --data-urlencode "secret=your personal secret" --data-urlencode "ttl=60"`" Your unique one-time URL returned from the `curl` call as a plain text string.
 
 * **201** - Secret created and one-time password URL returned.
 
-* **404** - Missing *secret* and *ttl* form name
+* **404** - Missing *secret* and/or *ttl* form name
 
+**POST /auto**
+
+Used to create a random secret from a script.  Use JSON to specify the *size* and *ttl* variables for your request. Here is an example with `curl:` `curl -v --data-urlencode "{"size":"16" ,"ttl":"60"}`" Your unique one-time URL returned from the `curl` call as a plain text string.
+
+* **201** - Secret created and one-time password URL returned.
+
+* **404** - Missing *size* and/or *ttl* form name
 
 Developers
 ==========

@@ -14,9 +14,10 @@
                  [digest "1.4.4"]
                  [org.clojure/data.json "0.2.5"]
                  ]
-  :plugins [[lein-ring "0.8.11"]]
+  :plugins [[lein-ring "0.8.11"][lein-beanstalk "0.2.7"]]
   :ring {:handler casper.core/app}
   ;:target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
   :main casper.core
+  :aws {:beanstalk {:region "us-east-1"}}
 )

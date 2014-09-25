@@ -87,15 +87,17 @@
 
   (if (nil? secret)
     (build-response http-status-bad-request "Missing Secret")
-    (let [ 
-       ttl-int (if (integer? ttl) ttl (if (re-find  #"^[0123456789]+$" ttl) (Integer/parseInt ttl) default-ttl ))
-       encrypted-secret (encrypt-base64 (if (nil? secret) "none" secret) encryption-key)
-       my-key (unique-key) 
-      ]
+    (if (integer? ttl)
+      (let [ 
+         encrypted-secret (encrypt-base64 (if (nil? secret) "none" secret) encryption-key)
+         my-key (unique-key) 
+        ]
 
-      (insert-secret my-key encrypted-secret ttl-int)
-      (build-response http-status-created (create-url server context port my-key))
-    )
+        (insert-secret my-key encrypted-secret ttl)
+        (build-response http-status-created (create-url server context port my-key))
+      )
+      (build-response http-status-bad-request "Missing or bad TTL")
+    )  
   )  
 )  
 
@@ -133,8 +135,11 @@
   )     
 
   (POST "/" {context :context, params :params,port :server-port,server :server-name} 
-    (let [ ttl (get params :ttl default-ttl )] 
-      (encrypt-and-save-secret ttl (get params :secret) server context port)
+    (let [ ttl (get params :ttl "")] 
+      (if (re-find  #"^[0123456789]+$" ttl) 
+        (encrypt-and-save-secret (Integer/parseInt ttl) (get params :secret) server context port)
+        (build-response http-status-bad-request "TTL missing or bad")
+      )  
     )  
   )
 

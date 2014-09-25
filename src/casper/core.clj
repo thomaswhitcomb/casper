@@ -20,7 +20,7 @@
 (def text-html {"Content-Type" "text/html; charset=ISO-8859-4"})
 
 ; Default TTL
-(def default-ttl "15")
+(def default-ttl 15)
 
 ; HTTP response codes
 (def http-status-ok 200)
@@ -39,9 +39,18 @@
 (defn get-size-ttl [j] 
   (let [ m (json/read-str j) 
          size (get m "size" 16)
-         ttl (get m "ttl" (Integer/parseInt default-ttl))
+         ttl (get m "ttl" default-ttl)
        ]
     [size ttl]
+  )
+) 
+
+(defn get-ttl-secret [j] 
+  (let [ m (json/read-str j) 
+         secret (get m "secret" "")
+         ttl (get m "ttl" default-ttl)
+       ]
+    [ttl secret]
   )
 ) 
 
@@ -49,7 +58,7 @@
 (defn create-html [context] 
     {
       :status http-status-ok   
-      :body (str "<form method='post' action='" context "/create'>"
+      :body (str "<form method='post' action='" context "/'>"
                     "<textarea type='text' name='secret' rows='4' cols='50' placeholder='What is your secret'></textarea >"
                     "<p><input type='text' name='ttl' placeholder='TTL (seconds)' value='" default-ttl "'/></p>"
                     "<p><input type='submit' /></p>"
@@ -72,14 +81,30 @@
    (str (if (even? port) "http" "https") "://" server ":" port context "/secret/" my-key )
 )  
 
+; ttl - integer
+; secret - string of anything
+(defn encrypt-and-save-secret [ttl secret server context port]
+
+  (if (nil? secret)
+    (build-response http-status-bad-request "Missing Secret")
+    (let [ 
+       ttl-int (if (integer? ttl) ttl (if (re-find  #"^[0123456789]+$" ttl) (Integer/parseInt ttl) default-ttl ))
+       encrypted-secret (encrypt-base64 (if (nil? secret) "none" secret) encryption-key)
+       my-key (unique-key) 
+      ]
+
+      (insert-secret my-key encrypted-secret ttl-int)
+      (build-response http-status-created (create-url server context port my-key))
+    )
+  )  
+)  
+
 (defroutes casper-routes           
 
   (GET "/" {context :context} (create-html context))
 
   ; good example of a redirect
   ; (GET "/" {context :context} (redirect (str context "/create")))
-
-  (GET "/create" {context :context}  "TBD")
 
   (GET "/secret/:id" [id] 
     (let [ record  (first (select-secret id)) ]
@@ -102,36 +127,20 @@
   )     
 
   (POST "/auto" {context :context, params :params, port :server-port,server :server-name}
-    (if (not= nil (get params :json))
-      (let [ size-ttl (get-size-ttl (get params :json)) 
-             encrypted-secret (encrypt-base64 (create-secret (size-ttl 0)) encryption-key)
-             my-key (unique-key) 
-           ] 
-           (insert-secret my-key encrypted-secret (size-ttl 1))
-           (build-response http-status-created (create-url server context port my-key))
-      )
-      (build-response http-status-bad-request "Missing json form field" )
-    )    
+    (let [ size-ttl (get-size-ttl (get params :json)) ] 
+      (encrypt-and-save-secret (size-ttl 1) (create-secret (size-ttl 0)) server context port)
+    )
   )     
+
   (POST "/" {context :context, params :params,port :server-port,server :server-name} 
-    (if (not= nil (get params :secret))
-      (let [ ttl (get params :ttl default-ttl )] 
+    (let [ ttl (get params :ttl default-ttl )] 
+      (encrypt-and-save-secret ttl (get params :secret) server context port)
+    )  
+  )
 
-        (if (re-find #"\d+" ttl ) 
-          (let [ 
-              ttl-int (Integer/parseInt ttl )  ; TTL default is 15 seconds
-              encrypted-secret (encrypt-base64 (get params :secret) encryption-key)
-              my-key (unique-key) 
-             ]
-
-             (insert-secret my-key encrypted-secret ttl-int)
-             (build-response http-status-created (create-url server context port my-key))
-          )
-          (build-response http-status-bad-request "TTL must be integer" )
-        )  
-     )   
-     (build-response http-status-bad-request "Missing secret form field")
-
+  (POST "/create" {context :context, params :params,port :server-port,server :server-name} 
+    (let [ ttl-secret (get-ttl-secret (get params :json)) ] 
+      (encrypt-and-save-secret (ttl-secret 0) (ttl-secret 1) server context port)
     )  
   )
 

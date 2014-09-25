@@ -74,9 +74,12 @@
 
 (defroutes casper-routes           
 
-  (GET "/" {context :context} (redirect (str context "/create")))
+  (GET "/" {context :context} (create-html context))
 
-  (GET "/create" {context :context}  (create-html context))
+  ; good example of a redirect
+  ; (GET "/" {context :context} (redirect (str context "/create")))
+
+  (GET "/create" {context :context}  "TBD")
 
   (GET "/secret/:id" [id] 
     (let [ record  (first (select-secret id)) ]
@@ -110,7 +113,7 @@
       (build-response http-status-bad-request "Missing json form field" )
     )    
   )     
-  (POST "/create" {context :context, params :params,port :server-port,server :server-name} 
+  (POST "/" {context :context, params :params,port :server-port,server :server-name} 
     (if (not= nil (get params :secret))
       (let [ ttl (get params :ttl default-ttl )] 
 

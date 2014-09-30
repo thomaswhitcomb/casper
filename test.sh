@@ -22,7 +22,7 @@ fi
 
 # Create with bad TTL from FORM
 URL=`curl --silent --data-urlencode "secret=$1" --data-urlencode "ttl=x" -w "%{http_code}"  http://${HOST}/`
-if [ "$URL" == "TTL must be integer400" ];then
+if [ "$URL" == "TTL missing or bad400" ];then
 	echo "Test 2 - OK"
 else
 	echo "Test 2 - Failed"

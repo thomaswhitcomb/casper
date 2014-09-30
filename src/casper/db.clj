@@ -1,53 +1,43 @@
 (ns casper.db
-  (:require [clojure.java.jdbc :as sql] )
+  (:require [taoensso.faraday :as far] )
   (:gen-class)
 )
+(defn now-seconds [] (quot (System/currentTimeMillis) 1000))
 
-(def database 
-  {:classname   "org.sqlite.JDBC"
-   :subprotocol "sqlite"
-   :subname     "database.db"
-  }
-)
-(def testdata 
-  {
-   :key "aa-bb-cc-dd"
-   :secret "===adsf=sdf==sd=f=sd=f===sd=sdf23rwebdfg"
-  }
-) 
+;(def client-opts {:access-key "some key" :secret-key "secret-key" :endpoint "http://localhost:8000"})
+(def client-opts 
+  (let [
+        access-key (if-let [k (. System getProperty "AWS_ACCESS_KEY_ID") ] k "none")
+        secret-key (if-let [k (. System getProperty "AWS_ACCESS_KEY_ID") ] k "none")
+       ]
+   {:access-key access-key, :secret-key secret-key :endpoint "http://localhost:8000"} 
+  )
+)  
+
+
+(def table :casper)
 
 (defn drop-db []
-  (try ( sql/db-do-commands database 
-     (sql/drop-table-ddl :secrets
-     )
-  )                    
-  (catch Exception e (println e))
-  )
+  (try 
+    (far/delete-table client-opts table)
+  (catch Exception e (str "caught exception: " (.getMessage e))))  
 )
 
 (defn create-db []
-
-  (try (sql/db-do-commands database
-    (sql/create-table-ddl :secrets
-       [:id :serial "PRIMARY KEY"]
-       [:created_at :timestamp "NOT NULL" "DEFAULT CURRENT_TIMESTAMP"]
-       [:key :varchar]
-       [:secret :varchar]
-    )
-  )
-  (catch Exception e (println e))
-  )
+  (far/create-table client-opts table [:key :s] {:throughput {:read 1 :write 1} :block? true})
 )
 
-(defn insert-secret [key secret] 
-  (sql/insert! database :secrets { :key key :secret secret })
+(defn insert-secret [key secret ttl] 
+  (far/put-item client-opts table {:key key :secret secret :ttl ttl :created_at (now-seconds) })
 ) 
 (defn select-secret [key ] 
-  (sql/query database [(str "SELECT id,key,secret,created_at FROM secrets WHERE key = '" key "';")])
+  (far/get-item client-opts table {:key key})
 ) 
 (defn delete-secret [key ] 
-  (sql/delete! database  :secrets [(str "key = '" key "'" )])
-) 
+  (far/delete-item client-opts table {:key key})
+)
+(println client-opts)
 (drop-db)
 (create-db)
-(sql/insert! database :secrets testdata)
+(insert-secret "blah" "blahblah" 115)
+(delete-secret "blah")

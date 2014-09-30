@@ -4,8 +4,8 @@
   (:use ring.adapter.jetty)
   (:require
     [ casper.crypto :refer [encrypt decrypt encrypt-base64 decrypt-base64]] 
-    ;[ casper.db-ram :refer [insert-secret select-secret delete-secret]] 
-    [ casper.db-ram :refer [insert-secret select-secret delete-secret now-seconds]] 
+    ;[ casper.db-ram :refer [insert-secret select-secret delete-secret now-seconds]] 
+    [ casper.db :refer [insert-secret select-secret delete-secret now-seconds]] 
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
     [compojure.route :as route]
@@ -21,6 +21,9 @@
 
 ; Default TTL
 (def default-ttl 15)
+
+; A regular expression for a list of digits and only digits
+(def string-of-digits #"^[0123456789]+$")
 
 ; HTTP response codes
 (def http-status-ok 200)
@@ -109,9 +112,9 @@
   ; (GET "/" {context :context} (redirect (str context "/create")))
 
   (GET "/secret/:id" [id] 
-    (let [ record  (first (select-secret id)) ]
+    (let [ record  (select-secret id) ]
       (delete-secret id) 
-      (if (= 0 (count record))
+      (if (nil? record)
         (build-response http-status-not-found, "Secret already viewed")
         (if (>= (+ (get record :ttl) (get record :created_at)) (now-seconds))
           (build-response http-status-ok (str (decrypt-base64 (get record :secret) encryption-key)))
@@ -136,7 +139,7 @@
 
   (POST "/" {context :context, params :params,port :server-port,server :server-name} 
     (let [ ttl (get params :ttl "")] 
-      (if (re-find  #"^[0123456789]+$" ttl) 
+      (if (re-find  string-of-digits ttl) 
         (encrypt-and-save-secret (Integer/parseInt ttl) (get params :secret) server context port)
         (build-response http-status-bad-request "TTL missing or bad")
       )  

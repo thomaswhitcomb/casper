@@ -13,6 +13,7 @@
                  [org.xerial/sqlite-jdbc "3.7.15-M1"]
                  [digest "1.4.4"]
                  [org.clojure/data.json "0.2.5"]
+                 [com.taoensso/faraday "1.5.0" :exclusions [org.clojure/clojure]]
                  ]
   :plugins [[lein-ring "0.8.11"][lein-beanstalk "0.2.7"]]
   :ring {:handler casper.core/app}

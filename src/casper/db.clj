@@ -2,15 +2,19 @@
   (:require [taoensso.faraday :as far] )
   (:gen-class)
 )
+
 (defn now-seconds [] (quot (System/currentTimeMillis) 1000))
 
-;(def client-opts {:access-key "some key" :secret-key "secret-key" :endpoint "http://localhost:8000"})
 (def client-opts 
   (let [
         access-key (if-let [k (. System getProperty "AWS_ACCESS_KEY_ID") ] k "none")
-        secret-key (if-let [k (. System getProperty "AWS_ACCESS_KEY_ID") ] k "none")
+        secret-key (if-let [k (. System getProperty "AWS_SECRET_KEY") ] k "none")
+        opts {:access-key access-key, :secret-key secret-key}
        ]
-   {:access-key access-key, :secret-key secret-key :endpoint "http://localhost:8000"} 
+    (if (= "none" access-key)
+      (assoc opts :endpoint"http://localhost:8000")
+      opts
+    )  
   )
 )  
 

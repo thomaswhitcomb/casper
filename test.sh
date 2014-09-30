@@ -1,6 +1,6 @@
 #!/bin/sh
-HOST="localhost:50000"
-#HOST="vast-bayou-9238.herokuapp.com"
+#HOST="localhost:50000"
+HOST="casper-dev.elasticbeanstalk.com"
 
 # Create missing secret form field from FORM
 URL=`curl --silent --data-urlencode "sxcret=$1" --data-urlencode "ttl=10" -w "%{http_code}" http://${HOST}/`

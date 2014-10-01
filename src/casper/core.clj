@@ -5,7 +5,7 @@
   (:require
     [ casper.crypto :refer [encrypt decrypt encrypt-base64 decrypt-base64]] 
     ;[ casper.db-ram :refer [insert-secret select-secret delete-secret now-seconds]] 
-    [ casper.db :refer [insert-secret select-secret delete-secret now-seconds]] 
+    [ casper.db :refer [insert-secret select-secret delete-secret now-seconds get-aws-key]] 
     [charset-bytes.core :refer [utf8-bytes]]
     [compojure.handler :as handler]
     [compojure.route :as route]
@@ -34,7 +34,7 @@
 
 ; Encryption key - TBD needs improvement
 ;(def encryption-key (slurp "resources/encrypt-key.txt"))
-(def encryption-key "ewro[i80AE9MNGLQIW8L;ZXNG-=[kf ;lsks")
+(def encryption-key (get-aws-key "AWS_SECRET_KEY"))
 
 ; Create a unique URL consistent id
 (defn unique-key [] (digest/md5 (str (java.util.UUID/randomUUID))))

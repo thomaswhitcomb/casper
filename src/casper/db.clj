@@ -22,13 +22,19 @@
 (def table :casper)
 
 (defn drop-db []
-  (try 
-    (far/delete-table client-opts table)
-  (catch Exception e (str "caught exception: " (.getMessage e))))  
+  (let [tables (far/list-tables client-opts)]
+    (if (= tables [table])
+      (far/delete-table client-opts table)
+    )  
+  )  
 )
 
 (defn create-db []
-  (far/create-table client-opts table [:key :s] {:throughput {:read 1 :write 1} :block? true})
+  (let [tables (far/list-tables client-opts)]
+    (if (= 0 (count tables)) 
+      (far/create-table client-opts table [:key :s] {:throughput {:read 1 :write 1} :block? true})
+    )  
+  )  
 )
 
 (defn insert-secret [key secret ttl] 
@@ -41,7 +47,6 @@
   (far/delete-item client-opts table {:key key})
 )
 (println client-opts)
-(drop-db)
 (create-db)
 (insert-secret "blah" "blahblah" 115)
 (delete-secret "blah")

@@ -1,0 +1,13 @@
+body {
+	background-color:#99CC99;
+	font-family: Verdana, sans-serif;
+}
+a {
+	font-size:28px;
+	cursor:pointer;
+	text-decoration:none;
+}
+a>div{
+	display:inline-block;
+	padding-bottom:20px;
+}

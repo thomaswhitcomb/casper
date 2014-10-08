@@ -2,6 +2,9 @@ body {
 	background-color:#99CC99;
 	font-family: Verdana, sans-serif;
 }
+textarea{
+	width:80%;
+}
 a {
 	font-size:28px;
 	cursor:pointer;

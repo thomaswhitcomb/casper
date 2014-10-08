@@ -19,7 +19,7 @@
 (def text-html {"Content-Type" "text/html; charset=ISO-8859-4"})
 
 ; Default TTL
-(def default-ttl 15)
+(def default-ttl 600)
 
 ; A regular expression for a list of digits and only digits
 (def string-of-digits #"^[0123456789]+$")
@@ -61,7 +61,7 @@
     {
       :status http-status-ok   
       :body (str "<html><head>"
-                 "<link rel='stylesheet' type='text/css' href='css/main.css'>"
+                 "<link rel='stylesheet' type='text/css' href='/css/main.css'>"
                  "</head><body>"
                  "<a href='/'><div>Casper</div></a>"
                  "<form method='post' action='" context "/'>"
@@ -78,7 +78,6 @@
   (str
    "<script type='text/javascript' src='js/ZeroClipboard.js'></script>"
    "<script>ZeroClipboard.config( { swfPath: 'http://" server ":" port context "/html/ZeroClipboard.swf' } );</script>"
-   "<a href='/'><div>Casper</div></a>"
    "<div id='clipboard-input'>" url "</div>"
    "<br>"
    "<div id='my-button' style='font-family:courier;cursor:pointer;display:none;padding:6px;background-color:lightgray' onmousedown='push()' onmouseup='release()'  data-clipboard-target='clipboard-input' title='Click to copy to clipboard.' data-copied-hint='Copied!'>Copy</div>"
@@ -89,8 +88,10 @@
   { :status http-status :headers text-html
     :body (str 
             "<html><head>"
-            "<link rel='stylesheet' type='text/css' href='css/main.css'>"
+            "<link rel='stylesheet' type='text/css' href='/css/main.css'>"
             "</head><body>" 
+            "<a href='/'><div>Casper</div></a>"
+            "<br>"
             content 
             "</body></html>"
           )
@@ -140,7 +141,7 @@
       (if (nil? record)
         (build-response http-status-not-found, "Secret already viewed")
         (if (>= (+ (get record :ttl) (get record :created_at)) (db/now-seconds))
-          (build-response http-status-ok (str (decrypt-base64 (get record :secret) encryption-key)))
+          (build-response http-status-ok (str "<textarea>" (decrypt-base64 (get record :secret) encryption-key) "</textarea>"))
           (build-response http-status-gone "TTL expired")
         )  
       )

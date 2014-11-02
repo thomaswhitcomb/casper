@@ -13,11 +13,13 @@
                  [digest "1.4.4"]
                  [org.clojure/data.json "0.2.5"]
                  [com.taoensso/faraday "1.5.0" :exclusions [org.clojure/clojure]]
+                 [amazonica "0.2.28" :exclusions [joda-time]]
                  ]
   :plugins [[lein-ring "0.8.11"][lein-beanstalk "0.2.7"]]
   :ring {:handler casper.core/app}
   ;:target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
   :main casper.core
-  :aws {:beanstalk {:region "us-east-1"}}
+  ;:aws {:beanstalk {:region "us-east-1" :s3-bucket "casper-staging-123"}}
+  :aws {:beanstalk {:region "us-east-1" }}
 )

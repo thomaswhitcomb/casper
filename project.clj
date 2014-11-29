@@ -14,6 +14,7 @@
                  [org.clojure/data.json "0.2.5"]
                  [com.taoensso/faraday "1.5.0" :exclusions [org.clojure/clojure]]
                  [amazonica "0.2.28" :exclusions [joda-time]]
+                 [enlive "1.1.1"]
                  ]
   :plugins [[lein-ring "0.8.11"][lein-beanstalk "0.2.7"]]
   :ring {:handler casper.core/app}
